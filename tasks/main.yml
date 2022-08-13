@@ -1,2 +1,27 @@
 ---
-# tasks file for wifi
+
+- name: ensure wpasupplicant
+  ansible.builtin.package:
+    name: wpasupplicant
+    state: present
+
+- name: deploy wpa_supplicant config
+  ansible.builtin.template:
+    src: wpa_supplicant.conf.jinja2
+    dest: /etc/wpa_supplicant/wpa_supplicant.conf
+    owner: root
+    group: root
+    mode: '0600'
+  notify: reconfigure wpasupplicant
+
+- name: ensure wpasupplicant is enabled
+  ansible.builtin.service:
+    name: wpa_supplicant
+    enabled: yes
+
+# based on
+- name: setup wlan0 reconnect hack via crontab
+  ansible.builtin.cron:
+    name: "wlan0 reconnect hack"
+    minute: "*/5"
+    job: "/bin/ping -q -c10 8.8.8.8 > /dev/null 2>&1 || (/sbin/wpa_cli -i wlan0 reconfigure ;/usr/bin/logger wifi on wlan0 restarted via crontab)"
