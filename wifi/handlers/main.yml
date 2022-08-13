@@ -1,0 +1,10 @@
+---
+
+- name: restart wpasupplicant
+  ansible.builtin.service:
+    name: wpa_supplicant
+    state: restarted
+
+# https://raspberrypi.stackexchange.com/questions/73749/how-to-connect-to-wifi-without-reboot
+- name: reconfigure wpasupplicant
+  ansible.builtin.command: wpa_cli -i wlan0 reconfigure
