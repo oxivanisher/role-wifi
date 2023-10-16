@@ -47,7 +47,7 @@
           - nonint
           - do_wifi_country
           - "{{ wifi_country }}"
-      when: wifi_country == wifi_country_out.stdout
+      when: wifi_country != wifi_country_out.stdout
       changed_when: true
       failed_when: false
 
