@@ -1,6 +1,6 @@
 ---
 - name: Configure wifi before bookworm
-  when: ansible_distribution_major_version < 12
+  when: ansible_distribution_major_version | int < 12
   block:
     - name: Ensure wpasupplicant
       ansible.builtin.package:
@@ -28,7 +28,7 @@
         job: "/bin/ping -q -c10 8.8.8.8 > /dev/null 2>&1 || (/sbin/wpa_cli -i wlan0 reconfigure ;/usr/bin/logger wifi on wlan0 restarted via crontab)"
 
 - name: Configure wifi starting from bookworm (NetworkManager)
-  when: ansible_distribution_major_version >= 12
+  when: ansible_distribution_major_version | int >= 12
   block:
     - name: Get current wifi country
       ansible.builtin.command:
