@@ -1,26 +1,89 @@
 ---
-- name: Ensure wpasupplicant
-  ansible.builtin.package:
-    name: wpasupplicant
-    state: present
+- name: Configure wifi before bookworm
+  when: ansible_distribution_major_version < 12
+  block:
+    - name: Ensure wpasupplicant
+      ansible.builtin.package:
+        name: wpasupplicant
+        state: present
 
-- name: Deploy wpa_supplicant config
-  ansible.builtin.template:
-    src: wpa_supplicant.conf.jinja2
-    dest: /etc/wpa_supplicant/wpa_supplicant.conf
-    owner: root
-    group: root
-    mode: "0600"
-  notify: Reconfigure wpasupplicant
+    - name: Deploy wpa_supplicant config
+      ansible.builtin.template:
+        src: wpa_supplicant.conf.jinja2
+        dest: /etc/wpa_supplicant/wpa_supplicant.conf
+        owner: root
+        group: root
+        mode: "0600"
+      notify: Reconfigure wpasupplicant
 
-- name: Ensure wpasupplicant is enabled
-  ansible.builtin.service:
-    name: wpa_supplicant
-    enabled: true
+    - name: Ensure wpasupplicant is enabled
+      ansible.builtin.service:
+        name: wpa_supplicant
+        enabled: true
 
-# based on
-- name: Setup wlan0 reconnect hack via crontab
-  ansible.builtin.cron:
-    name: "wlan0 reconnect hack"
-    minute: "*/5"
-    job: "/bin/ping -q -c10 8.8.8.8 > /dev/null 2>&1 || (/sbin/wpa_cli -i wlan0 reconfigure ;/usr/bin/logger wifi on wlan0 restarted via crontab)"
+    - name: Setup wlan0 reconnect hack via crontab
+      ansible.builtin.cron:
+        name: "wlan0 reconnect hack"
+        minute: "*/5"
+        job: "/bin/ping -q -c10 8.8.8.8 > /dev/null 2>&1 || (/sbin/wpa_cli -i wlan0 reconfigure ;/usr/bin/logger wifi on wlan0 restarted via crontab)"
+
+- name: Configure wifi starting from bookworm (NetworkManager)
+  when: ansible_distribution_major_version >= 12
+  block:
+    - name: Get current wifi country
+      ansible.builtin.command:
+        argv:
+          - /usr/bin/raspi-config
+          - nonint
+          - get_wifi_country
+      register: wifi_country_out
+      changed_when: false
+      failed_when: false
+
+    - name: Set wifi country
+      ansible.builtin.command:
+        argv:
+          - /usr/bin/raspi-config
+          - nonint
+          - do_wifi_country
+          - "{{ wifi_country }}"
+      when: wifi_country in wifi_country_out.stdout_lines
+      changed_when: true
+      failed_when: false
+
+    - name: Remove old wlan0 reconnect hack via crontab
+      ansible.builtin.cron:
+        name: "wlan0 reconnect hack"
+        state: absent
+
+    - name: Deploy empty wpa_supplicant config
+      ansible.builtin.copy:
+        src: wpa_supplicant.conf
+        dest: /etc/wpa_supplicant/wpa_supplicant.conf
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Configure wifi networks
+      community.general.nmcli:
+        type: wifi
+        conn_name: "{{ item.str }}"
+        ssid: "{{ item.ssid }}"
+        wifi_sec:
+          key-mgmt: wpa-psk
+          psk: "{{ item.psk }}"
+        autoconnect: true
+        state: present
+      with_dict: "{{ wifi_networks }}"
+
+    - name: Ensure wpasupplicant is disabled
+      ansible.builtin.service:
+        name: wpa_supplicant
+        enabled: false
+      notify: Reboot system
+
+    - name: Enable NetworkManager
+      service:
+        name: NetworkManager
+        enabled: true
+      notify: Reboot system
