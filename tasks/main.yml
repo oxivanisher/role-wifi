@@ -74,7 +74,7 @@
           psk: "{{ item.psk }}"
         autoconnect: true
         state: present
-      with_dict: "{{ wifi_networks }}"
+      with_items: "{{ wifi_networks }}"
 
     - name: Ensure wpasupplicant is disabled
       ansible.builtin.service:
