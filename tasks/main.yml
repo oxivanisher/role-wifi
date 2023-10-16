@@ -47,7 +47,7 @@
           - nonint
           - do_wifi_country
           - "{{ wifi_country }}"
-      when: wifi_country in wifi_country_out.stdout_lines
+      when: wifi_country == wifi_country_out.stdout
       changed_when: true
       failed_when: false
 
@@ -72,7 +72,7 @@
         wifi_sec:
           key-mgmt: wpa-psk
           psk: "{{ item.psk }}"
-          ifname: wlan0
+        ifname: wlan0
         autoconnect: true
         state: present
       with_items: "{{ wifi_networks }}"
