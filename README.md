@@ -1,31 +1,49 @@
-Role Name
-=========
+wifi
+====
 
-A brief description of the role goes here.
+This role configures the wifi connections. It is targetted primarilly at Raspberry Pis but should work on other platforms. It handles connections with wpa_supplicant for Raspberry Pi OS < 12 (bookworm) and also connections using NetworkManager for newer releases.
 
-Requirements
-------------
-
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+As always: Use at your own risk!
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+| Name          | Comment                              | Default value |
+|---------------|--------------------------------------|---------------|
+| wifi_country  | Set the required country for wifi    | `CH`          |
+| wifi_networks | A list of wifi networks to configure | `[]`          |
 
-Dependencies
-------------
+The `wifi_networks` variable has a list of the following keys:
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+| Name | Comment                                           |
+|------|---------------------------------------------------|
+| ssid | The SSID of the wifi connection.                  |
+| psk  | The password (pre shared key) for the connection. |
+| str  | The name for the connection.                      |
+
+This is a example:
+
+```yaml
+wifi_country: CH
+wifi_networks:
+  - ssid: wifi_ssid_a
+    psk: wifi_pw_b
+    str: wifi_connection_a
+  - ssid: wifi_ssid_b
+    psk: wifi_pw_b
+    str: wifi_connection_b
+```
 
 Example Playbook
 ----------------
-
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+```yaml
+- name: Wifi client setup (primarily for raspis)
+  hosts: wifi
+  collections:
+    - oxivanisher.raspberry_pi
+  roles:
+    - role: oxivanisher.raspberry_pi.wifi
+```
 
 License
 -------
@@ -35,4 +53,4 @@ BSD
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+This role is part of the [oxivanisher.raspberry_pi](https://galaxy.ansible.com/ui/repo/published/oxivanisher/raspberry_pi/) collection, and the source for that is located on [github](https://github.com/oxivanisher/collection-raspberry_pi).

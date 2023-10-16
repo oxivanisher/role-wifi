@@ -30,61 +30,56 @@
 - name: Configure wifi starting from bookworm (NetworkManager)
   when: ansible_distribution_major_version | int >= 12
   block:
-    - name: Get current wifi country
-      ansible.builtin.command:
-        argv:
-          - /usr/bin/raspi-config
-          - nonint
-          - get_wifi_country
-      register: wifi_country_out
-      changed_when: false
-      failed_when: false
+    - name: Gather facts about running services
+      ansible.builtin.service_facts:
 
-    - name: Set wifi country
-      ansible.builtin.command:
-        argv:
-          - /usr/bin/raspi-config
-          - nonint
-          - do_wifi_country
-          - "{{ wifi_country }}"
-      when: wifi_country != wifi_country_out.stdout
-      changed_when: true
-      failed_when: false
+    - name: Only configure wifi if NetworManager is already running. See the readme for more info.
+      when: "ansible_facts.services['NetworkManager.service']['state'] == 'running'"
+      block:
+        - name: Get current wifi country
+          ansible.builtin.command:
+            argv:
+              - /usr/bin/raspi-config
+              - nonint
+              - get_wifi_country
+          register: wifi_country_out
+          changed_when: false
+          failed_when: false
 
-    - name: Remove old wlan0 reconnect hack via crontab
-      ansible.builtin.cron:
-        name: "wlan0 reconnect hack"
-        state: absent
+        - name: Set wifi country
+          ansible.builtin.command:
+            argv:
+              - /usr/bin/raspi-config
+              - nonint
+              - do_wifi_country
+              - "{{ wifi_country }}"
+          when: wifi_country != wifi_country_out.stdout
+          changed_when: true
+          failed_when: false
 
-    - name: Deploy empty wpa_supplicant config
-      ansible.builtin.copy:
-        src: wpa_supplicant.conf
-        dest: /etc/wpa_supplicant/wpa_supplicant.conf
-        owner: root
-        group: root
-        mode: "0600"
+        - name: Remove old wlan0 reconnect hack via crontab
+          ansible.builtin.cron:
+            name: "wlan0 reconnect hack"
+            state: absent
 
-    - name: Configure wifi networks
-      community.general.nmcli:
-        type: wifi
-        conn_name: "{{ item.str }}"
-        ssid: "{{ item.ssid }}"
-        wifi_sec:
-          key-mgmt: wpa-psk
-          psk: "{{ item.psk }}"
-        ifname: wlan0
-        autoconnect: true
-        state: present
-      with_items: "{{ wifi_networks }}"
+        - name: Configure wifi networks
+          community.general.nmcli:
+            type: wifi
+            conn_name: "{{ item.str }}"
+            ssid: "{{ item.ssid }}"
+            wifi_sec:
+              key-mgmt: wpa-psk
+              psk: "{{ item.psk }}"
+            ifname: wlan0
+            autoconnect: true
+            state: present
+          with_items: "{{ wifi_networks }}"
+          ignore_errors: "{{ ansible_check_mode }}" # there is room for improvement here
 
-    - name: Ensure wpasupplicant is disabled
-      ansible.builtin.service:
-        name: wpa_supplicant
-        enabled: false
-      notify: Reboot system
-
-    - name: Enable NetworkManager
-      ansible.builtin.service:
-        name: NetworkManager
-        enabled: true
-      notify: Reboot system
+        - name: Deploy empty wpa_supplicant config
+          ansible.builtin.copy:
+            src: wpa_supplicant.conf
+            dest: /etc/wpa_supplicant/wpa_supplicant.conf
+            owner: root
+            group: root
+            mode: "0600"
