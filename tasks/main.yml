@@ -83,7 +83,7 @@
       notify: Reboot system
 
     - name: Enable NetworkManager
-      service:
+      ansible.builtin.service:
         name: NetworkManager
         enabled: true
       notify: Reboot system
