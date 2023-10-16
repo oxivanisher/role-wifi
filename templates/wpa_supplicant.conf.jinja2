@@ -2,7 +2,7 @@ ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 update_config=1
 country={{ wifi_country }}
 
-{% for net in wifi_networks.networks|reverse -%}
+{% for net in wifi_networks|reverse -%}
 network={
     ssid="{{ net.ssid }}"
     psk="{{ net.psk }}"
