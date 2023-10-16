@@ -72,6 +72,7 @@
         wifi_sec:
           key-mgmt: wpa-psk
           psk: "{{ item.psk }}"
+          ifname: wlan0
         autoconnect: true
         state: present
       with_items: "{{ wifi_networks }}"
