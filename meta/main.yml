@@ -50,4 +50,4 @@ galaxy_info:
     - raspberrypi
 
 dependencies:
-  - "community.general": "*"
+  - role: community.general.nmcli
