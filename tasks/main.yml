@@ -25,7 +25,7 @@
       ansible.builtin.cron:
         name: "wlan0 reconnect hack"
         minute: "*/5"
-        job: |
+        job: >
           /bin/ping -q -c10 8.8.8.8 > /dev/null 2>&1 || (/sbin/wpa_cli -i wlan0 reconfigure;
           /usr/bin/logger wifi on wlan0 restarted via crontab) > /dev/null 2>&1
 
@@ -64,7 +64,7 @@
         #   ansible.builtin.cron:
         #     name: "wlan0 reconnect hack"
         #     minute: "*/5"
-        #     job: |
+        #     job: >
         #       /bin/ping -q -c10 8.8.8.8 > /dev/null 2>&1 || (/sbin/wpa_cli -i wlan0 reconfigure;
         #       /usr/bin/logger wifi on wlan0 restarted via crontab) > /dev/null 2>&1
 
