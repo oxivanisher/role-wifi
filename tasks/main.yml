@@ -57,6 +57,7 @@
           changed_when: true
           failed_when: false
 
+        # with forever reconnect, this might be not needed. this is currently tested...
         # - name: Setup wlan0 reconnect hack via crontab
         #   ansible.builtin.cron:
         #     name: "wlan0 reconnect hack"
@@ -74,43 +75,76 @@
             ifname: wlan0
             autoconnect: true
             state: present
-          with_items: "{{ wifi_networks }}"
+          loop: "{{ wifi_networks | flatten(levels=1) }}"
           ignore_errors: "{{ ansible_check_mode }}" # there is room for improvement here
 
-        - name: Configure wifi networks
-          block:
-            - name: Get current connection.autoconnect-retries
-              community.general.command:
-                argv:
-                  - /usr/bin/nmcli
-                  - connection
-                  - show
-                  - "{{ item.str }}"
-                  - "|"
-                  - grep
-                  - connection.autoconnect-retries
-              register: autoconnect_output
-              ignore_errors: "{{ ansible_check_mode }}"
-              changed_when: false
-              failed_when: false
+        - name: Get current connection.autoconnect-retries
+          ansible.builtin.command:
+            argv:
+              - /usr/bin/nmcli
+              - --get-values
+              - connection.autoconnect-retries
+              - connection
+              - show
+              - "{{ item.str }}"
+          register: autoconnect_retries_output
+          ignore_errors: "{{ ansible_check_mode }}"
+          changed_when: false
+          failed_when: false
+          loop: "{{ wifi_networks | flatten(levels=1) }}"
 
-            - name: Configure wifi networks connection.autoconnect-retries to 0 (forever)
-              community.general.command:
-                argv:
-                  - /usr/bin/nmcli
-                  - connection
-                  - modify
-                  - "{{ item.str }}"
-                  - connection.autoconnect-retries
-                  - 0
-              ignore_errors: "{{ ansible_check_mode }}"
-              changed_when: true
-              failed_when: false
-              when: "'0 (forever)' not in autoconnect_output.stdout"
+        - name: Configure wifi networks connection.autoconnect-retries to 0 (forever)
+          ansible.builtin.command:
+            argv:
+              - /usr/bin/nmcli
+              - connection
+              - modify
+              - "{{ item.str }}"
+              - connection.autoconnect-retries
+              - 0
+          register: autoconnect_set
+          ignore_errors: "{{ ansible_check_mode }}"
+          changed_when: true
+          failed_when: autoconnect_set.rc > 0
+          when: "autoconnect_retries_output.results[ansible_loop.index0].stdout | int != 0"
+          loop: "{{ wifi_networks | flatten(levels=1) }}"
+          loop_control:
+            extended: true
 
-          with_items: "{{ wifi_networks }}"
+        - name: Get current connection.autoconnect-priority
+          ansible.builtin.command:
+            argv:
+              - /usr/bin/nmcli
+              - --get-values
+              - connection.autoconnect-priority
+              - connection
+              - show
+              - "{{ item.str }}"
+          register: autoconnect_priority_output
+          ignore_errors: "{{ ansible_check_mode }}"
+          changed_when: false
+          failed_when: false
+          loop: "{{ wifi_networks | flatten(levels=1) }}"
 
-        # nmcli con mod thunderbluff connection.autoconnect-retries 0
+        - name: Configure wifi networks connection.autoconnect-priority depending on the list position
+          ansible.builtin.command:
+            argv:
+              - /usr/bin/nmcli
+              - connection
+              - modify
+              - "{{ item.str }}"
+              - connection.autoconnect-priority
+              - "{{ reversed_index }}"
+          register: autoconnect_set
+          ignore_errors: "{{ ansible_check_mode }}"
+          changed_when: true
+          failed_when: autoconnect_set.rc > 0
+          when: "autoconnect_priority_output.results[ansible_loop.index0].stdout | int != reversed_index | int"
+          loop: "{{ wifi_networks | flatten(levels=1) }}"
+          loop_control:
+            extended: true
+          vars:
+            reversed_index: "{{ ansible_loop.index0 * -1 }}"
 
         - name: Deploy empty wpa_supplicant config
           ansible.builtin.copy:
