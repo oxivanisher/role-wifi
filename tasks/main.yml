@@ -26,8 +26,9 @@
         name: "wlan0 reconnect hack"
         minute: "*/5"
         job: >
-          /bin/ping -q -c10 8.8.8.8 > /dev/null 2>&1 || (/sbin/wpa_cli -i wlan0 reconfigure;
-          /usr/bin/logger wifi on wlan0 restarted via crontab) > /dev/null 2>&1
+          /bin/ping -q -c1 $(ip route | grep default | grep wlan0 | awk '{print $3}') > /dev/null 2>&1 ||
+          (/sbin/wpa_cli -i wlan0 reconfigure;
+          /usr/bin/logger "oXi wifi reconnect hack ran"; echo "$(date): oXi wifi reconnect hack ran")
 
 - name: Configure wifi starting from bookworm (NetworkManager)
   when: ansible_distribution_major_version | int >= 12
