@@ -29,7 +29,7 @@
           gw=$(ip route | grep default | grep wlan0 | awk '{print $3}');
           ping -q -c1 $gw > /dev/null 2>&1; sleep 3; ping -q -c1 $gw > /dev/null 2>&1 ||
           (/sbin/wpa_cli -i wlan0 reconfigure;
-          /usr/bin/logger "oXi wifi reconnect hack ran"; echo "$(date): oXi wifi reconnect hack ran")
+          /usr/bin/logger "oXi wifi reconnect hack ran")
 
 - name: Configure wifi starting from bookworm (NetworkManager)
   when: ansible_distribution_major_version | int >= 12
@@ -70,7 +70,7 @@
               gw=$(ip route | grep default | grep wlan0 | awk '{print $3}');
               ping -q -c1 $gw > /dev/null 2>&1; sleep 3; ping -q -c1 $gw > /dev/null 2>&1 ||
               (/usr/bin/nmcli radio wifi off; /usr/bin/sleep 3; /usr/bin/nmcli radio wifi on;
-              /usr/bin/logger "oXi wifi reconnect hack ran"; echo "$(date): oXi wifi reconnect hack ran")
+              /usr/bin/logger "oXi wifi reconnect hack ran")
             # > /dev/null 2>&1
 
         # - name: Remove wlan0 reconnect hack via crontab
