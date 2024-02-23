@@ -1,0 +1,18 @@
+[Unit]
+Description=Wifi reconnect hack
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/wifi_reconnect_hack.sh
+WorkingDirectory=/tmp
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=wifi_reconnect_hack
+NotifyAccess=all
+User=root
+Group=root
+Nice=1
+Type=oneshot
+
+[Install]
+WantedBy=multi-user.target

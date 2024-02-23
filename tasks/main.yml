@@ -25,11 +25,7 @@
       ansible.builtin.cron:
         name: "wlan0 reconnect hack"
         minute: "*/5"
-        job: >
-          gw=$(ip route | grep default | grep wlan0 | awk '{print $3}');
-          ping -q -c1 $gw > /dev/null 2>&1; sleep 3; ping -q -c1 $gw > /dev/null 2>&1 ||
-          (/sbin/wpa_cli -i wlan0 reconfigure;
-          /usr/bin/logger "oXi wifi reconnect hack ran")
+        state: absent
 
 - name: Configure wifi starting from bookworm (NetworkManager)
   when: ansible_distribution_major_version | int >= 12
@@ -66,17 +62,7 @@
           ansible.builtin.cron:
             name: "wlan0 reconnect hack"
             minute: "*/5"
-            job: >
-              gw=$(ip route | grep default | grep wlan0 | awk '{print $3}');
-              ping -q -c1 $gw > /dev/null 2>&1; sleep 3; ping -q -c1 $gw > /dev/null 2>&1 ||
-              (/usr/bin/nmcli radio wifi off; /usr/bin/sleep 3; /usr/bin/nmcli radio wifi on;
-              /usr/bin/logger "oXi wifi reconnect hack ran")
-            # > /dev/null 2>&1
-
-        # - name: Remove wlan0 reconnect hack via crontab
-        #   ansible.builtin.cron:
-        #     name: "wlan0 reconnect hack"
-        #     state: absent
+            state: absent
 
         - name: Configure wifi networks
           community.general.nmcli:
@@ -167,3 +153,35 @@
             owner: root
             group: root
             mode: "0600"
+
+- name: Deploy wlan0 reconnect hack script
+  ansible.builtin.copy:
+    src: wifi_reconnect_hack.sh
+    dest:
+    owner: root
+    group: root
+    mode: "0750"
+
+- name: Deploy wlan0 reconnect hack systemd service unit
+  ansible.builtin.copy:
+    src: wifi_reconnect_hack.service
+    dest: /etc/systemd/system/wifi_reconnect_hack.service
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Deploy wlan0 reconnect hack systemd timer unit
+  ansible.builtin.copy:
+    src: wifi_reconnect_hack.timer
+    dest: /etc/systemd/system/wifi_reconnect_hack.timer
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Enable the wlan0 reconnect hack systemd timer unit
+  ansible.builtin.systemd_service:
+    name: wifi_reconnect_hack.timer
+    state: started
+    enabled: true
+    daemon_reload: true
+  ignore_errors: "{{ ansible_check_mode }}"

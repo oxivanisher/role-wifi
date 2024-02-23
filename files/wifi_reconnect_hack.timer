@@ -1,0 +1,10 @@
+[Unit]
+Description=Wifi reconnect hack check every 5 minutes
+
+[Timer]
+Unit=wifi_reconnect_hack
+OnCalendar=*:0/5
+RandomizedDelaySec=60
+
+[Install]
+WantedBy=timers.target
