@@ -23,19 +23,19 @@ function reconnect_NetworkManager() {
     /usr/bin/nmcli radio wifi off
     /usr/bin/sleep 3
     /usr/bin/nmcli radio wifi on
-    echo "oXi wifi reconnect hack ran for NetworkManager"
+    echo "Wifi reconnect hack ran for NetworkManager"
 }
 
 function reconnect_wpa_supplicant() {
     /sbin/wpa_cli -i wlan0 reconfigure
-    echo "oXi wifi reconnect hack ran for wpa_supplicant"
+    echo "Wifi reconnect hack ran for wpa_supplicant"
 }
 
 if ip route | grep default | grep wlan0 >/dev/null 2>&1;
 then
   if check_ping_failure;
   then
-      # pinging the gateway failed, reconnecting is required
+      echo "Pinging the gateway failed, reconnecting the wifi interface is required"
       if systemctl is-active --quiet NetworkManager.service;
       then
           reconnect_NetworkManager
@@ -43,14 +43,11 @@ then
       then
           reconnect_wpa_supplicant
       else
-          # unknown network managmet service
-          :
+          echo "Unknown network managmet service"
       fi
   else
-      # pinging the gateway was successful.
-      :
+      echo "Pinging the gateway was successful, not reconnecting the wifi interface."
   fi
 else
-  # no wlan0 interface found ... this should probably be investigated
-  :
+  echo "No wlan0 interface found ... this should probably be investigated"
 fi
