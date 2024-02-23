@@ -31,7 +31,7 @@ function reconnect_wpa_supplicant() {
     echo "Wifi reconnect hack ran for wpa_supplicant"
 }
 
-if ip route | grep default | grep wlan0 >/dev/null 2>&1;
+if ip link show | grep wlan0 >/dev/null 2>&1;
 then
   if check_ping_failure;
   then
