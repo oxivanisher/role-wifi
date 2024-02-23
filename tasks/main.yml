@@ -157,7 +157,7 @@
 - name: Deploy wlan0 reconnect hack script
   ansible.builtin.copy:
     src: wifi_reconnect_hack.sh
-    dest:
+    dest: /usr/local/bin/wifi_reconnect_hack.sh
     owner: root
     group: root
     mode: "0750"
