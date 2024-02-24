@@ -20,9 +20,16 @@ function check_ping_failure() {
 }
 
 function reconnect_NetworkManager() {
+    echo "Disabling and enabling wifi"
     /usr/bin/nmcli radio wifi off
     /usr/bin/sleep 3
     /usr/bin/nmcli radio wifi on
+    /usr/bin/sleep 3
+    state=$(/usr/bin/nmcli device status | grep "wlan0" | head -n1 | awk '{print $3}')
+    if [[ "$state" == "disconnected" ]]; then
+        echo "Force wifi to connect"
+        /usr/bin/nmcli device connect wlan0
+    fi
     echo "Wifi reconnect hack ran for NetworkManager"
 }
 
