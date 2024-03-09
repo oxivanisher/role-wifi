@@ -27,8 +27,12 @@ function reconnect_NetworkManager() {
     /usr/bin/sleep 3
     state=$(/usr/bin/nmcli device status | grep "wlan0" | head -n1 | awk '{print $3}')
     if [[ "$state" == "disconnected" ]]; then
-        echo "Force wifi to connect"
+        echo "Force wifi to connect, since current state is $state."
         /usr/bin/nmcli device connect wlan0
+    elif [[ "$state" == "connected" ]]; then
+        echo "Not forcing wifi to connect. Current state is $state."
+    else
+        echo "Not forcing wifi to connect. Investivate this please, current state is $state."
     fi
     echo "Wifi reconnect hack ran for NetworkManager"
 }
