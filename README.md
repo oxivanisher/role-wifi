@@ -15,11 +15,12 @@ Role Variables
 
 The `wifi_networks` variable has a list of the following keys:
 
-| Name | Comment                                           |
-|------|---------------------------------------------------|
-| ssid | The SSID of the wifi connection.                  |
-| psk  | The password (pre shared key) for the connection. |
-| str  | The name for the connection.                      |
+| Name     | Comment                                            |
+|----------|----------------------------------------------------|
+| ssid     | The SSID of the wifi connection.                   |
+| psk      | The password (pre shared key) for the connection.  |
+| str      | The name for the connection.                       |
+| key_mgmt | The key management. wpa-psk for WPA2, sae for WPA3 |
 
 This is a example and `wifi_ssid_a` will be prefered to `wifi_ssid_b` if both networks are available:
 
@@ -29,9 +30,11 @@ wifi_networks:
   - ssid: wifi_ssid_a
     psk: wifi_pw_b
     str: wifi_connection_a
+    key-mgmt: wpa-psk
   - ssid: wifi_ssid_b
     psk: wifi_pw_b
     str: wifi_connection_b
+    key-mgmt: sae
 ```
 
 Example Playbook

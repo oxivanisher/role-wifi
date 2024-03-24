@@ -70,7 +70,7 @@
             conn_name: "{{ item.str }}"
             ssid: "{{ item.ssid }}"
             wifi_sec:
-              key-mgmt: wpa-psk
+              key-mgmt: "{{ item.key_mgmt }}"
               psk: "{{ item.psk }}"
             ifname: wlan0
             autoconnect: true
