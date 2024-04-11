@@ -3,6 +3,10 @@
 - name: Reconfigure wpasupplicant
   ansible.builtin.command: wpa_cli -i wlan0 reconfigure
   changed_when: true
+  become: true
+  become_user: root
 
 - name: Reboot system
   ansible.builtin.reboot:
+  become: true
+  become_user: root

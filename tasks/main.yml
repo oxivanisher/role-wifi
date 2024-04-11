@@ -6,6 +6,8 @@
       ansible.builtin.package:
         name: wpasupplicant
         state: present
+      become: true
+      become_user: root
 
     - name: Deploy wpa_supplicant config
       ansible.builtin.template:
@@ -15,17 +17,23 @@
         group: root
         mode: "0600"
       notify: Reconfigure wpasupplicant
+      become: true
+      become_user: root
 
     - name: Ensure wpasupplicant is enabled
       ansible.builtin.service:
         name: wpa_supplicant
         enabled: true
+      become: true
+      become_user: root
 
     - name: Setup wlan0 reconnect hack via crontab
       ansible.builtin.cron:
         name: "wlan0 reconnect hack"
         minute: "*/5"
         state: absent
+      become: true
+      become_user: root
 
 - name: Configure wifi starting from bookworm (NetworkManager)
   when: ansible_distribution_major_version | int >= 12
@@ -45,6 +53,8 @@
           register: wifi_country_out
           changed_when: false
           failed_when: false
+          become: true
+          become_user: root
 
         - name: Set wifi country
           ansible.builtin.command:
@@ -56,6 +66,8 @@
           when: wifi_country != wifi_country_out.stdout
           changed_when: true
           failed_when: false
+          become: true
+          become_user: root
 
         # with forever reconnect, this might be not needed. this is currently tested...
         - name: Setup wlan0 reconnect hack via crontab
@@ -63,6 +75,8 @@
             name: "wlan0 reconnect hack"
             minute: "*/5"
             state: absent
+          become: true
+          become_user: root
 
         - name: Configure wifi networks
           community.general.nmcli:
@@ -77,6 +91,8 @@
             state: present
           loop: "{{ wifi_networks | flatten(levels=1) }}"
           ignore_errors: "{{ ansible_check_mode }}" # there is room for improvement here
+          become: true
+          become_user: root
 
         - name: Get current connection.autoconnect-retries
           ansible.builtin.command:
@@ -92,6 +108,8 @@
           changed_when: false
           failed_when: false
           loop: "{{ wifi_networks | flatten(levels=1) }}"
+          become: true
+          become_user: root
 
         - name: Configure wifi networks connection.autoconnect-retries to 0 (forever)
           ansible.builtin.command:
@@ -110,6 +128,8 @@
           loop: "{{ wifi_networks | flatten(levels=1) }}"
           loop_control:
             extended: true
+          become: true
+          become_user: root
 
         - name: Get current connection.autoconnect-priority
           ansible.builtin.command:
@@ -125,6 +145,8 @@
           changed_when: false
           failed_when: false
           loop: "{{ wifi_networks | flatten(levels=1) }}"
+          become: true
+          become_user: root
 
         - name: Configure wifi networks connection.autoconnect-priority depending on the list position
           ansible.builtin.command:
@@ -145,6 +167,8 @@
             extended: true
           vars:
             reversed_index: "{{ ansible_loop.index0 * -1 }}"
+          become: true
+          become_user: root
 
         - name: Deploy empty wpa_supplicant config
           ansible.builtin.copy:
@@ -153,6 +177,8 @@
             owner: root
             group: root
             mode: "0600"
+          become: true
+          become_user: root
 
 - name: Deploy wlan0 reconnect hack script
   ansible.builtin.copy:
@@ -161,6 +187,8 @@
     owner: root
     group: root
     mode: "0750"
+  become: true
+  become_user: root
 
 - name: Deploy wlan0 reconnect hack systemd service unit
   ansible.builtin.copy:
@@ -169,6 +197,8 @@
     owner: root
     group: root
     mode: "0644"
+  become: true
+  become_user: root
 
 - name: Deploy wlan0 reconnect hack systemd timer unit
   ansible.builtin.copy:
@@ -177,6 +207,8 @@
     owner: root
     group: root
     mode: "0644"
+  become: true
+  become_user: root
 
 - name: Enable the wlan0 reconnect hack systemd timer unit
   ansible.builtin.systemd_service:
@@ -185,3 +217,5 @@
     enabled: true
     daemon_reload: true
   ignore_errors: "{{ ansible_check_mode }}"
+  become: true
+  become_user: root
