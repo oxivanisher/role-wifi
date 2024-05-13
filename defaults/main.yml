@@ -4,3 +4,4 @@ wifi_networks: []
 # - ssid: wifi_ssid
 #   psk: wifi_pw
 #   str: wifi_connection_name
+#   key_mgmt: wpa-psk
