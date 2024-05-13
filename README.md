@@ -30,11 +30,11 @@ wifi_networks:
   - ssid: wifi_ssid_a
     psk: wifi_pw_b
     str: wifi_connection_a
-    key-mgmt: wpa-psk
+    key_mgmt: wpa-psk
   - ssid: wifi_ssid_b
     psk: wifi_pw_b
     str: wifi_connection_b
-    key-mgmt: sae
+    key_mgmt: sae
 ```
 
 Example Playbook
