@@ -1,5 +1,6 @@
 wifi
 ====
+[![Ansible Lint](https://github.com/oxivanisher/role-wifi/actions/workflows/ansible-lint.yml/badge.svg)](https://github.com/oxivanisher/role-wifi/actions/workflows/ansible-lint.yml)
 
 This role configures the wifi connections. It is targetted primarilly at Raspberry Pis but should work on other platforms. It handles connections with wpa_supplicant for Raspberry Pi OS < 12 (bookworm) and also connections using NetworkManager for newer releases. It configures the connection priority to the position in the list within `wifi_networks`, where the first element has the highest priority.
 
