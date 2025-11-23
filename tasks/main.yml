@@ -1,6 +1,6 @@
 ---
 - name: Configure wifi before bookworm
-  when: ansible_distribution_major_version | int < 12
+  when: ansible_facts.distribution_major_version | int < 12
   block:
     - name: Ensure wpasupplicant
       ansible.builtin.package:
@@ -36,7 +36,7 @@
       become_user: root
 
 - name: Configure wifi starting from bookworm (NetworkManager)
-  when: ansible_distribution_major_version | int >= 12
+  when: ansible_facts.distribution_major_version | int >= 12
   block:
     - name: Gather facts about running services
       ansible.builtin.service_facts:
