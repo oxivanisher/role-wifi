@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function check_ping_failure() {
-    local ip=$(ip route | grep default | grep wlan0 | awk '{print $3}')
+    local ip=$(ip route | grep default | grep wlan0 | awk '{print $3}' | head -n1)
     local count=3
     local failed_count=0
 
