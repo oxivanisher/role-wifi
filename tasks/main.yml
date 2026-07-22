@@ -96,7 +96,7 @@
               - connection
               - show
               - "{{ item.str }}"
-          register: autoconnect_retries_output
+          register: wifi_autoconnect_retries_output
           ignore_errors: "{{ ansible_check_mode }}"
           changed_when: false
           failed_when: false
@@ -112,11 +112,11 @@
               - "{{ item.str }}"
               - connection.autoconnect-retries
               - 0
-          register: autoconnect_set
+          register: wifi_autoconnect_set
           ignore_errors: "{{ ansible_check_mode }}"
           changed_when: true
-          failed_when: autoconnect_set.rc > 0
-          when: "autoconnect_retries_output.results[ansible_loop.index0].stdout | int != 0"
+          failed_when: wifi_autoconnect_set.rc > 0
+          when: "wifi_autoconnect_retries_output.results[ansible_loop.index0].stdout | int != 0"
           loop: "{{ wifi_networks | flatten(levels=1) }}"
           loop_control:
             extended: true
@@ -131,7 +131,7 @@
               - connection
               - show
               - "{{ item.str }}"
-          register: autoconnect_priority_output
+          register: wifi_autoconnect_priority_output
           ignore_errors: "{{ ansible_check_mode }}"
           changed_when: false
           failed_when: false
@@ -147,11 +147,11 @@
               - "{{ item.str }}"
               - connection.autoconnect-priority
               - "{{ reversed_index }}"
-          register: autoconnect_set
+          register: wifi_autoconnect_set
           ignore_errors: "{{ ansible_check_mode }}"
           changed_when: true
-          failed_when: autoconnect_set.rc > 0
-          when: "autoconnect_priority_output.results[ansible_loop.index0].stdout | int != reversed_index | int"
+          failed_when: wifi_autoconnect_set.rc > 0
+          when: "wifi_autoconnect_priority_output.results[ansible_loop.index0].stdout | int != reversed_index | int"
           loop: "{{ wifi_networks | flatten(levels=1) }}"
           loop_control:
             extended: true
